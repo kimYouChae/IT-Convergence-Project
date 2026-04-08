@@ -1,0 +1,1 @@
+{"tfjsVersion":"1.7.4","tmVersion":"2.4.12","packageVersion":"0.8.4-alpha2","packageName":"@teachablemachine/image","timeStamp":"2026-04-04T11:32:29.254Z","userMetadata":{},"modelName":"Study Guard","labels":["Focus(공부중)","Phone(휴대폰 사용)","Away(자리비움)","Distracted(졸기,엎드려 자기)"],"imageSize":224}

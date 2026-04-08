@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Guard webcam</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container">
+        <main class="content-area">
+            <section class="npc-section">
+                <div class="label">npc</div>
+                <div class="placeholder">NPC 영상 대기 중</div>
+            </section>
+
+            <section class="side-section">
+                <div class="webcam-box">
+                    <div class="label">웹캠</div>
+                    <div id="webcam-container"></div>
+                </div>
+                
+                <div class="prediction-box">
+                    <div class="label">인식 결과</div>
+                    <div id="prediction-text" class="prediction-text">대기 중...</div>
+                    <div id="label-container" class="label-container"></div>
+                </div>
+                
+                <div class="status-indicators">
+                    <div class="circle red"></div>
+                    <div class="circle red"></div>
+                    <div class="circle red"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="bottom-bar">
+            <div id="status-text" class="status-text">상태 : 대기 중</div>
+            <button id="start-btn" type="button">Start</button>
+            <button id="exit-btn">종료</button>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.13.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+    <script src="script.js"></script>
+    
+</body>
+</html>
