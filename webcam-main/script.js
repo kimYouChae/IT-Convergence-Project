@@ -3,7 +3,7 @@
  */
 
 const URL = "./my_model/"; // 모델 경로 (프로젝트 폴더 내부로 이동 후 수정)
-const VIDEO_PATH = "./npc_video/"; // NPC 영상 폴더 경로
+const VIDEO_PATH = "../npc_video/"; // NPC 영상 폴더가 상위 폴더에 있는 경우
 let model, webcam, labelContainer, maxPredictions;
 let isRunning = false;
 let animationId = null;
@@ -23,10 +23,14 @@ function playNpcSequence(sources, onComplete = null) {
     let currentIdx = 0;
 
     if (npcPlaceholder) npcPlaceholder.style.display = 'none';
-    if (npcVideo) {
-        npcVideo.style.display = 'block';
-        npcVideo.muted = false;
+    if (!npcVideo) {
+        console.error("오류: HTML에서 'npc-video' 요소를 찾을 수 없습니다. index.html이 최신 상태인지 확인해 주세요.");
+        if (onComplete) onComplete();
+        return;
     }
+
+    npcVideo.style.display = 'block';
+    npcVideo.muted = false;
 
     const playNext = () => {
         if (currentIdx < sources.length) {
@@ -63,8 +67,8 @@ async function init() {
     if (!model) await loadModel();
     if (!model) return;
 
-    // 2. 시작 영상 재생 후 감시 루프 시작
-    playNpcSequence(['시작-들어오는.mp4', '시작-나가는.mp4'], () => {
+    // 2. 시작 영상 재생 후 감시 루프 시작 (영문 파일명으로 변경)
+    playNpcSequence(['start_in.mp4', 'start_out.mp4'], () => {
         console.log("시작 영상 완료, 감시를 시작합니다.");
         isRunning = true;
         animationId = window.requestAnimationFrame(loop);
@@ -84,16 +88,16 @@ function triggerWarning() {
     console.log(`경고 발생! 현재 횟수: ${warningCount}`);
 
     if (warningCount === 1) {
-        // 1차 경고 (파일명: 이미지 기준)
-        playNpcSequence(['경고-방으로 들어오는.mp4', '경고-방밖으로나가는.mp4']);
+        // 1차 경고
+        playNpcSequence(['warning1_in.mp4', 'warning1_out.mp4']);
     }
     else if (warningCount === 2) {
-        // 2차 경고 (파일명: 언더바(_) 주의)
-        playNpcSequence(['경고2_들어오기.mp4', '경고2_나가기.mp4']);
+        // 2차 경고
+        playNpcSequence(['warning2_in.mp4', 'warning2_out.mp4']);
     }
     else if (warningCount >= 3) {
         // 3차 경고 (실패)
-        playNpcSequence(['실패1.mp4', '실패2.mp4'], () => {
+        playNpcSequence(['fail1.mp4', 'fail2.mp4'], () => {
             alert("실패! 공부 모드가 종료됩니다.");
             stopApp();
         });
@@ -104,7 +108,7 @@ function triggerWarning() {
  * [3-3] 성공 상태 처리 (필요 시 호출)
  */
 function triggerSuccess() {
-    playNpcSequence(['성공-박수.mp4'], () => {
+    playNpcSequence(['success_clap.mp4'], () => {
         alert("목표 달성! 수고하셨습니다.");
         stopApp();
     });
@@ -225,7 +229,7 @@ window.onload = function () {
 
     //실패 버튼 : 누르면 즉시 실패 영상 재생 후 종료
     document.getElementById('fail-btn').onclick = () => {
-        playNpcSequence(['실패1.mp4', '실패2.mp4'], () => {
+        playNpcSequence(['fail1.mp4', 'fail2.mp4'], () => {
             stopApp();
             alert("수동 실패 처리가 완료되었습니다.");
         });
@@ -233,7 +237,7 @@ window.onload = function () {
 
     // 종료 버튼 클릭 시 실패 영상 세트 재생 후 종료
     document.getElementById('exit-btn').onclick = () => {
-        playNpcSequence(['실패1.mp4', '실패2.mp4'], () => {
+        playNpcSequence(['fail1.mp4', 'fail2.mp4'], () => {
             stopApp();
         });
     };
