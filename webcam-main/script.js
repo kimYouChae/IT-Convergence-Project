@@ -2,7 +2,7 @@
  * Study Guard - 최종 통합 스크립트
  */
 
-const URL = "../my_model/"; // 모델 경로
+const URL = "./my_model/"; // 모델 경로 (프로젝트 폴더 내부로 이동 후 수정)
 const VIDEO_PATH = "./npc_video/"; // NPC 영상 폴더 경로
 let model, webcam, labelContainer, maxPredictions;
 let isRunning = false;
