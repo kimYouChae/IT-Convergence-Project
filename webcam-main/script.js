@@ -7,6 +7,8 @@ const VIDEO_PATH = "../npc_video/"; // NPC 영상 폴더가 상위 폴더에 있
 let model, webcam, labelContainer, maxPredictions;
 let isRunning = false;
 let animationId = null;
+let successTimerId = null; // 목표 시간 달성 타이머를 관리할 변수
+let remainingTimeStr = "00:00"; // 화면에 표시할 남은 시간 문자열
 
 // --- NPC 비디오 및 상태 관리 변수 ---
 let warningCount = 0;
@@ -57,6 +59,15 @@ function playNpcSequence(sources, onComplete = null) {
 async function init() {
     if (isRunning) return;
 
+    // --- 공부 시간 입력받기 ---
+    const inputTime = prompt("몇 분 동안 공부하시겠습니까? (숫자만 입력)", "50");
+    if (inputTime === null) return; // 취소 버튼 클릭 시 시작 안 함
+    const studyDurationMinutes = parseInt(inputTime, 10);
+    if (isNaN(studyDurationMinutes) || studyDurationMinutes <= 0) {
+        alert("올바른 시간을 입력해 주세요.");
+        return;
+    }
+
     // 태그 재확인
     npcVideo = document.getElementById('npc-video');
     npcPlaceholder = document.getElementById('npc-placeholder');
@@ -72,8 +83,36 @@ async function init() {
         console.log("시작 영상 완료, 감시를 시작합니다.");
         isRunning = true;
         animationId = window.requestAnimationFrame(loop);
-        document.getElementById('status-text').innerText = "상태 : 감시 중";
         distractionStack = 0;
+
+        // --- 남은 시간 카운트다운 로직 ---
+        let totalSeconds = studyDurationMinutes * 60;
+        const updateTimerStr = () => {
+            const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+            const s = (totalSeconds % 60).toString().padStart(2, '0');
+            remainingTimeStr = `${m}:${s}`;
+        };
+        
+        updateTimerStr();
+        document.getElementById('status-text').innerText = `상태 : 감시 중 | 남은 시간: ${remainingTimeStr}`;
+
+        // 1초마다 남은 시간 감소 및 화면 업데이트
+        successTimerId = setInterval(() => {
+            if (isRunning) {
+                totalSeconds--;
+                updateTimerStr();
+                
+                // predict 함수 실행과 무관하게 타이머 UI 갱신
+                const currentText = document.getElementById('status-text').innerText;
+                const baseStatus = currentText.split(' | ')[0];
+                document.getElementById('status-text').innerText = `${baseStatus} | 남은 시간: ${remainingTimeStr}`;
+
+                if (totalSeconds <= 0) {
+                    clearInterval(successTimerId);
+                    triggerSuccess();
+                }
+            }
+        }, 1000);
     });
 }
 
@@ -108,8 +147,8 @@ function triggerWarning() {
  * [3-3] 성공 상태 처리 (필요 시 호출)
  */
 function triggerSuccess() {
-    playNpcSequence(['success_clap.mp4'], () => {
-        alert("목표 달성! 수고하셨습니다.");
+    playNpcSequence(['success.mp4'], () => {
+        alert("목표 시간 달성! 수고하셨습니다.");
         stopApp();
     });
 }
@@ -178,7 +217,7 @@ async function predict() {
     // [중요] 클래스 이름 100% 일치 확인
     if (best.className === "Distracted(졸기,엎드려 자기)" && best.probability > 0.9) {
         distractionStack++;
-        document.getElementById('status-text').innerText = `상태 : 딴짓 감지 (${distractionStack}/${DISTRACTION_THRESHOLD})`;
+            document.getElementById('status-text').innerText = `상태 : 딴짓 감지 (${distractionStack}/${DISTRACTION_THRESHOLD}) | 남은 시간: ${remainingTimeStr}`;
 
         if (distractionStack >= DISTRACTION_THRESHOLD) {
             triggerWarning();
@@ -187,7 +226,7 @@ async function predict() {
     } else {
         distractionStack = 0;
         if (isRunning) {
-            document.getElementById('status-text').innerText = "상태 : 감시 중 (정상)";
+                document.getElementById('status-text').innerText = `상태 : 감시 중 (정상) | 남은 시간: ${remainingTimeStr}`;
         }
     }
 }
@@ -197,6 +236,10 @@ async function predict() {
  */
 function stopApp() {
     isRunning = false;
+    if (successTimerId) {
+        clearInterval(successTimerId); // 실행 중인 성공 타이머 취소
+        successTimerId = null;
+    }
     if (animationId) {
         window.cancelAnimationFrame(animationId);
         animationId = null;
