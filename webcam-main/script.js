@@ -3,7 +3,7 @@
  */
 
 const URL = "./my_model/"; // 모델 경로 (프로젝트 폴더 내부로 이동 후 수정)
-const VIDEO_PATH = "../npc_video/"; // NPC 영상 폴더가 상위 폴더에 있는 경우
+const VIDEO_PATH = "./npc_video/"; // npc_video 폴더를 webcam-main 폴더 안에 넣어주세요.
 let model, webcam, labelContainer, maxPredictions;
 let isRunning = false;
 let animationId = null;
@@ -60,13 +60,15 @@ async function init() {
     if (isRunning) return;
 
     // --- 공부 시간 입력받기 ---
-    const inputTime = prompt("몇 분 동안 공부하시겠습니까? (숫자만 입력)", "50");
-    if (inputTime === null) return; // 취소 버튼 클릭 시 시작 안 함
+    const inputTime = document.getElementById('study-time-input').value;
     const studyDurationMinutes = parseInt(inputTime, 10);
-    if (isNaN(studyDurationMinutes) || studyDurationMinutes <= 0) {
-        alert("올바른 시간을 입력해 주세요.");
+    if (isNaN(studyDurationMinutes) || studyDurationMinutes < 30) {
+        alert("최소 30분 이상 설정해야 합니다.");
         return;
     }
+
+    // 메인 페이지로 화면 전환
+    switchPage('main-page');
 
     // 태그 재확인
     npcVideo = document.getElementById('npc-video');
@@ -137,8 +139,8 @@ function triggerWarning() {
     else if (warningCount >= 3) {
         // 3차 경고 (실패)
         playNpcSequence(['fail1.mp4', 'fail2.mp4'], () => {
-            alert("실패! 공부 모드가 종료됩니다.");
             stopApp();
+            showResultPage(false);
         });
     }
 }
@@ -148,8 +150,8 @@ function triggerWarning() {
  */
 function triggerSuccess() {
     playNpcSequence(['success.mp4'], () => {
-        alert("목표 시간 달성! 수고하셨습니다.");
         stopApp();
+        showResultPage(true);
     });
 }
 
@@ -263,18 +265,47 @@ function stopApp() {
     distractionStack = 0;
 }
 
+// --- 화면 전환 및 결과 페이지 처리 ---
+function switchPage(pageId) {
+    document.querySelectorAll('.page-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    document.getElementById(pageId).classList.add('active');
+}
+
+function showResultPage(isSuccess) {
+    switchPage('result-page');
+    const title = document.getElementById('result-title');
+    const message = document.getElementById('result-message');
+    
+    if (isSuccess) {
+        title.innerText = "성공!";
+        title.style.color = "#2ecc71"; // 녹색
+        message.innerText = "목표 시간을 달성했습니다. 수고하셨습니다!";
+    } else {
+        title.innerText = "실패...";
+        title.style.color = "#e74c3c"; // 적색
+        message.innerText = "딴짓이 감지되어 공부 모드가 종료되었습니다.";
+    }
+}
+
 // 이벤트 바인딩
 window.onload = function () {
     npcVideo = document.getElementById('npc-video');
     npcPlaceholder = document.getElementById('npc-placeholder');
-    //시작버튼
-    document.getElementById('start-btn').onclick = init;
+    //시작 페이지 START 버튼
+    document.getElementById('real-start-btn').onclick = init;
+
+    // 성공 버튼 : 누르면 즉시 성공 영상 재생 후 종료
+    document.getElementById('success-btn').onclick = () => {
+        triggerSuccess();
+    };
 
     //실패 버튼 : 누르면 즉시 실패 영상 재생 후 종료
     document.getElementById('fail-btn').onclick = () => {
         playNpcSequence(['fail1.mp4', 'fail2.mp4'], () => {
             stopApp();
-            alert("수동 실패 처리가 완료되었습니다.");
+            showResultPage(false);
         });
     };
 
@@ -282,7 +313,23 @@ window.onload = function () {
     document.getElementById('exit-btn').onclick = () => {
         playNpcSequence(['fail1.mp4', 'fail2.mp4'], () => {
             stopApp();
+            showResultPage(false);
         });
+    };
+
+    // 결과 페이지 처음으로 버튼
+    document.getElementById('go-home-btn').onclick = () => {
+        switchPage('start-page');
+    };
+
+    // 시작 페이지 -> 기록 페이지 이동 버튼
+    document.getElementById('go-record-btn').onclick = () => {
+        switchPage('record-page');
+    };
+
+    // 기록 페이지 -> 대기실(시작 페이지) 복귀 버튼
+    document.getElementById('back-to-lobby-btn').onclick = () => {
+        switchPage('start-page');
     };
 };
 
