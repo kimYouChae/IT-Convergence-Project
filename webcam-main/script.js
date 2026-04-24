@@ -12,8 +12,12 @@ let remainingTimeStr = "00:00"; // 화면에 표시할 남은 시간 문자열
 
 // --- NPC 비디오 및 상태 관리 변수 ---
 let warningCount = 0;
-let distractionStack = 0;
-const DISTRACTION_THRESHOLD = 200; // 약 10초간 유지될 때 경고 (프레임 단위) **1초 = 20프레임 입니다.
+
+// --- 상태 변화 기록(작전 로그) 변수 ---
+let actionLogs = [];
+let lastLoggedState = "";
+let isDistractedState = false; // 현재 딴짓 상태인지 여부
+let distractionStartTime = 0; // 딴짓이 시작된 시간
 
 let npcVideo;
 let npcPlaceholder;
@@ -54,6 +58,26 @@ function playNpcSequence(sources, onComplete = null) {
 }
 
 /**
+ * [추가] 상태 로그 기록 및 UI 업데이트 함수
+ */
+function addStateLog(stateName) {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    
+    actionLogs.push({ time: timeString, state: stateName });
+    
+    const tbody = document.getElementById('log-table-body');
+    if (tbody) {
+        tbody.innerHTML = "";
+        actionLogs.forEach(log => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${log.time}</td><td>${log.state}</td>`;
+            tbody.appendChild(tr);
+        });
+    }
+}
+
+/**
  * [3-1] 시작 버튼 클릭 시 초기화 및 시작 영상 재생
  */
 async function init() {
@@ -80,12 +104,20 @@ async function init() {
     if (!model) await loadModel();
     if (!model) return;
 
+    // 새 공부 시작 시 이전 로그 초기화
+    actionLogs = [];
+    lastLoggedState = "";
+    isDistractedState = false;
+    distractionStartTime = 0;
+    if (document.getElementById('log-table-body')) {
+        document.getElementById('log-table-body').innerHTML = "";
+    }
+
     // 2. 시작 영상 재생 후 감시 루프 시작 (영문 파일명으로 변경)
     playNpcSequence(['start_in.mp4', 'start_out.mp4'], () => {
         console.log("시작 영상 완료, 감시를 시작합니다.");
         isRunning = true;
         animationId = window.requestAnimationFrame(loop);
-        distractionStack = 0;
 
         // --- 남은 시간 카운트다운 로직 ---
         let totalSeconds = studyDurationMinutes * 60;
@@ -212,23 +244,52 @@ async function predict() {
 
     // NPC 영상이 재생 중인 동안은 딴짓 감지 카운트를 하지 않음
     if (!npcVideo.paused) {
-        distractionStack = 0;
+        isDistractedState = false;
+        distractionStartTime = 0;
         return;
     }
 
-    // [중요] 클래스 이름 100% 일치 확인
-    if (best.className === "Distracted(졸기,엎드려 자기)" && best.probability > 0.9) {
-        distractionStack++;
-            document.getElementById('status-text').innerText = `상태 : 딴짓 감지 (${distractionStack}/${DISTRACTION_THRESHOLD}) | 남은 시간: ${remainingTimeStr}`;
+    // [수정] 딴짓(휴대폰, 자리비움, 졸기)이 20초 이상 지속될 때 로그 기록 및 경고 영상 재생
+    if (best.probability > 0.8) {
+        if (best.className === "Focus(공부중)") {
+            if (isDistractedState) {
+                isDistractedState = false;
+                distractionStartTime = 0;
+            }
 
-        if (distractionStack >= DISTRACTION_THRESHOLD) {
-            triggerWarning();
-            distractionStack = 0;
-        }
-    } else {
-        distractionStack = 0;
-        if (isRunning) {
+            if (lastLoggedState !== "Focus(공부중)") {
+                addStateLog("Focus(공부중)");
+                lastLoggedState = "Focus(공부중)";
+            }
+            
+            if (isRunning) {
                 document.getElementById('status-text').innerText = `상태 : 감시 중 (정상) | 남은 시간: ${remainingTimeStr}`;
+            }
+        } else if (["Distracted(졸기,엎드려 자기)", "Phone(휴대폰 사용)", "Away(자리비움)"].includes(best.className)) {
+            if (!isDistractedState) {
+                isDistractedState = true;
+                distractionStartTime = Date.now();
+            }
+
+            const elapsedDistractionSec = (Date.now() - distractionStartTime) / 1000;
+            
+            // 화면 하단에 딴짓 20초 카운트다운을 시각적으로 표시
+            document.getElementById('status-text').innerText = `상태 : 딴짓 감지 (${Math.floor(elapsedDistractionSec)}/20초) | 남은 시간: ${remainingTimeStr}`;
+
+            if (elapsedDistractionSec >= 20) {
+                // 20초 돌파 시 현재 딴짓 상태를 로그에 기록
+                if (best.className !== lastLoggedState) {
+                    addStateLog(best.className);
+                    lastLoggedState = best.className;
+                }
+                
+                // 경고 영상 재생
+                triggerWarning();
+                
+                // 경고 발생 후 타이머 리셋
+                isDistractedState = false;
+                distractionStartTime = 0;
+            }
         }
     }
 }
@@ -262,7 +323,6 @@ function stopApp() {
     document.getElementById('webcam-container').innerHTML = "";
     webcam = null;
     warningCount = 0;
-    distractionStack = 0;
 }
 
 // --- 화면 전환 및 결과 페이지 처리 ---

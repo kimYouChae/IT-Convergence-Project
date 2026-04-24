@@ -293,3 +293,49 @@ video {
     transform: translateY(-5px);
 }
 .record-card h3 { margin: 0; font-size: 20px; }
+
+/* 작전 로그 테이블 스타일 */
+.log-section {
+    width: 100%;
+    margin-top: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.log-section h3 {
+    margin-top: 0;
+    text-align: center;
+    font-size: 18px;
+}
+.table-wrapper {
+    max-height: 250px; /* 테이블 최대 높이 (이보다 길어지면 스크롤 발생) */
+    overflow-y: auto;
+    margin-top: 15px;
+    padding-right: 5px;
+}
+/* 스크롤바 커스텀 디자인 */
+.table-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+.table-wrapper::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05); 
+    border-radius: 4px;
+}
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3); 
+    border-radius: 4px;
+}
+.log-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.log-table th, .log-table td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+.log-table th {
+    font-weight: bold;
+    color: #d4a373;
+}
