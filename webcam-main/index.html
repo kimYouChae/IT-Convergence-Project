@@ -12,13 +12,19 @@
         <div id="start-page" class="page-section active">
             <img src="./img/soldier1.png" class="side-img left-img" alt="왼쪽 장식">
             <img src="./img/soldier2.png" class="side-img right-img" alt="오른쪽 장식">
-            <h1>Study Guard</h1>
+            <h1>
+                <img src="./img/study guard.png" alt="Study Guard" style="max-width: 300px; height: auto;">
+            </h1>
             <div class="input-group">
                 <label for="study-time-input">목표 시간 (최소 30분)</label>
                 <input type="number" id="study-time-input" min="30" value="30">
             </div>
-            <button id="real-start-btn" class="primary-btn">START</button>
-            <button id="go-record-btn" class="primary-btn" style="background-color: #7f8c8d; margin-top: 10px;">기록 보기</button>
+            <button id="real-start-btn" class="primary-btn" style="background: transparent; border: none; padding: 0; cursor: pointer;">
+                <img src="./img/start.png" alt="START" style="max-width: 150px; height: auto;">
+            </button>
+            <button id="go-record-btn" class="primary-btn" style="background: transparent; border: none; padding: 0; cursor: pointer; margin-top: 10px;">
+                <img src="./img/record.png" alt="기록 보기" style="max-width: 150px; height: auto;">
+            </button>
         </div>
 
         <!-- 메인 감시 페이지 -->
@@ -55,7 +61,9 @@
             <div id="status-text" class="status-text">상태 : 대기 중</div>
             <button id="success-btn" type="button" style="background-color: #2ecc71; color: white; margin-right: 10px; padding: 10px 25px; border: none; border-radius: 5px; cursor: pointer;">성공</button>
             <button id="fail-btn" type="button" style="background-color: #e74c3c; color: white;">실패</button>
-            <button id="exit-btn">종료</button>
+            <button id="exit-btn" style="background: transparent; border: none; padding: 0; cursor: pointer; vertical-align: middle;">
+                <img src="./img/stop.png" alt="종료" style="max-width: 80px; height: auto;">
+            </button>
         </footer>
         </div>
 
@@ -63,13 +71,17 @@
         <div id="result-page" class="page-section">
             <h1 id="result-title">결과</h1>
             <p id="result-message"></p>
-            <button id="go-home-btn" class="primary-btn">처음으로</button>
+            <button id="go-home-btn" class="primary-btn" style="background: transparent; border: none; padding: 0; cursor: pointer;">
+                <img src="./img/home.png" alt="처음으로" style="max-width: 150px; height: auto;">
+            </button>
         </div>
 
         <!-- 2-3. 기록 페이지 -->
         <div id="record-page" class="page-section">
             <header class="record-top-bar">
-                <button id="back-to-lobby-btn" class="back-btn">&lt; 대기실로 복귀</button>
+                <button id="back-to-lobby-btn" class="back-btn" style="background: transparent; border: none; padding: 0; cursor: pointer;">
+                    <img src="./img/home.png" alt="대기실로 복귀" style="max-width: 150px; height: auto;">
+                </button>
             </header>
 
             <div class="record-container">
