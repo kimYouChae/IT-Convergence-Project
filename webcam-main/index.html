@@ -90,16 +90,16 @@
                 </div>
 
                 <div class="record-menu-grid">
-                    <div class="record-card">
+                    <div class="record-card" id="show-analysis-btn">
                         <h3>행동 분석망</h3>
                     </div>
-                    <div class="record-card">
+                    <div class="record-card" id="show-log-btn">
                         <h3>작전 로그</h3>
                     </div>
                 </div>
 
                 <!-- 작전 로그 기록 테이블 추가 -->
-                <div class="log-section">
+                <div class="log-section" id="log-section" style="display: none;">
                     <h3>작전 로그 (상태 변화 기록)</h3>
                     <div class="table-wrapper">
                         <table class="log-table">
@@ -115,12 +115,21 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- 행동 분석망 도넛 그래프 추가 -->
+                <div class="analysis-section" id="analysis-section" style="display: none;">
+                    <h3>행동 분석망 (행동 비율)</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="behavior-chart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.13.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
     
 </body>

@@ -19,6 +19,15 @@ let lastLoggedState = "";
 let isDistractedState = false; // 현재 딴짓 상태인지 여부
 let distractionStartTime = 0; // 딴짓이 시작된 시간
 
+// --- 행동 분석망 (도넛 그래프) 변수 ---
+let stateDurations = {
+    "Focus(공부중)": 0,
+    "Phone(휴대폰 사용)": 0,
+    "Away(자리비움)": 0
+};
+let currentRecognizedState = "Focus(공부중)";
+let behaviorChart = null;
+
 let npcVideo;
 let npcPlaceholder;
 
@@ -109,6 +118,8 @@ async function init() {
     lastLoggedState = "";
     isDistractedState = false;
     distractionStartTime = 0;
+    stateDurations = { "Focus(공부중)": 0, "Phone(휴대폰 사용)": 0, "Away(자리비움)": 0 };
+    currentRecognizedState = "Focus(공부중)";
     if (document.getElementById('log-table-body')) {
         document.getElementById('log-table-body').innerHTML = "";
     }
@@ -136,6 +147,11 @@ async function init() {
                 totalSeconds--;
                 updateTimerStr();
                 
+                // 1초마다 현재 인식된 상태의 누적 시간 증가 (비율 계산용)
+                if (stateDurations[currentRecognizedState] !== undefined) {
+                    stateDurations[currentRecognizedState]++;
+                }
+
                 // predict 함수 실행과 무관하게 타이머 UI 갱신
                 const currentText = document.getElementById('status-text').innerText;
                 const baseStatus = currentText.split(' | ')[0];
@@ -249,8 +265,10 @@ async function predict() {
         return;
     }
 
-    // [수정] 딴짓(휴대폰, 자리비움, 졸기)이 20초 이상 지속될 때 로그 기록 및 경고 영상 재생
+    // [수정] 딴짓(휴대폰, 자리비움)이 20초 이상 지속될 때 로그 기록 및 경고 영상 재생
     if (best.probability > 0.8) {
+        currentRecognizedState = best.className; // 현재 상태 업데이트
+
         if (best.className === "Focus(공부중)") {
             if (isDistractedState) {
                 isDistractedState = false;
@@ -265,7 +283,7 @@ async function predict() {
             if (isRunning) {
                 document.getElementById('status-text').innerText = `상태 : 감시 중 (정상) | 남은 시간: ${remainingTimeStr}`;
             }
-        } else if (["Distracted(졸기,엎드려 자기)", "Phone(휴대폰 사용)", "Away(자리비움)"].includes(best.className)) {
+        } else if (["Phone(휴대폰 사용)", "Away(자리비움)"].includes(best.className)) {
             if (!isDistractedState) {
                 isDistractedState = true;
                 distractionStartTime = Date.now();
@@ -390,8 +408,74 @@ window.onload = function () {
     // 기록 페이지 -> 대기실(시작 페이지) 복귀 버튼
     document.getElementById('back-to-lobby-btn').onclick = () => {
         switchPage('start-page');
+        
+        // 대기실로 돌아갈 때 작전 로그 닫기
+        document.getElementById('log-section').style.display = 'none';
+        document.getElementById('analysis-section').style.display = 'none';
+    };
+
+    // 작전 로그 버튼 클릭 시 로그 섹션 표시/숨김 토글
+    document.getElementById('show-log-btn').onclick = () => {
+        const logSection = document.getElementById('log-section');
+        if (logSection.style.display === 'none') {
+            logSection.style.display = 'block';
+        } else {
+            logSection.style.display = 'none';
+        }
+    };
+
+    // 행동 분석망 버튼 클릭 시 분석 섹션 표시/숨김 토글 및 차트 렌더링
+    document.getElementById('show-analysis-btn').onclick = () => {
+        const analysisSection = document.getElementById('analysis-section');
+        if (analysisSection.style.display === 'none') {
+            analysisSection.style.display = 'flex';
+            renderBehaviorChart();
+        } else {
+            analysisSection.style.display = 'none';
+        }
     };
 };
+
+/**
+ * [추가] 행동 분석망 차트 렌더링 함수
+ */
+function renderBehaviorChart() {
+    const ctx = document.getElementById('behavior-chart').getContext('2d');
+    const total = stateDurations["Focus(공부중)"] + stateDurations["Phone(휴대폰 사용)"] + stateDurations["Away(자리비움)"];
+    let dataValues = [0, 0, 0];
+    
+    if (total > 0) {
+        dataValues = [
+            ((stateDurations["Focus(공부중)"] / total) * 100).toFixed(1),
+            ((stateDurations["Phone(휴대폰 사용)"] / total) * 100).toFixed(1),
+            ((stateDurations["Away(자리비움)"] / total) * 100).toFixed(1)
+        ];
+    }
+
+    if (behaviorChart) {
+        behaviorChart.destroy();
+    }
+
+    behaviorChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['공부중', '휴대폰 사용', '자리비움'],
+            datasets: [{
+                data: dataValues,
+                backgroundColor: ['#2ecc71', '#e74c3c', '#f1c40f'], // 초록, 빨강, 노랑
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: 'white' } },
+                tooltip: { callbacks: { label: function(context) { return context.label + ': ' + context.raw + '%'; } } }
+            }
+        }
+    });
+}
 
 // 종료 버튼: 영상 없이 즉시 앱 중지 (기능 분리) 추후 수정시 사용하사면 됩니다. (백주은)
     /* document.getElementById('exit-btn').onclick = () => {
