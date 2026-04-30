@@ -27,6 +27,7 @@ let stateDurations = {
 };
 let currentRecognizedState = "Focus(공부중)";
 let behaviorChart = null;
+let totalFocusTime = 0; // 누적 집중 시간(초)
 
 let npcVideo;
 let npcPlaceholder;
@@ -150,6 +151,10 @@ async function init() {
                 // 1초마다 현재 인식된 상태의 누적 시간 증가 (비율 계산용)
                 if (stateDurations[currentRecognizedState] !== undefined) {
                     stateDurations[currentRecognizedState]++;
+                    // 집중 상태일 때 누적 집중 시간도 같이 증가
+                    if (currentRecognizedState === "Focus(공부중)") {
+                        totalFocusTime++;
+                    }
                 }
 
                 // predict 함수 실행과 무관하게 타이머 UI 갱신
@@ -403,6 +408,7 @@ window.onload = function () {
     // 시작 페이지 -> 기록 페이지 이동 버튼
     document.getElementById('go-record-btn').onclick = () => {
         switchPage('record-page');
+        updateTodayTime(); // 기록 페이지 이동 시 누적 시간 UI 갱신
     };
 
     // 기록 페이지 -> 대기실(시작 페이지) 복귀 버튼
@@ -475,6 +481,16 @@ function renderBehaviorChart() {
             }
         }
     });
+}
+
+/**
+ * [추가] 오늘의 집중 기록 시간 업데이트 함수
+ */
+function updateTodayTime() {
+    const h = Math.floor(totalFocusTime / 3600).toString().padStart(2, '0');
+    const m = Math.floor((totalFocusTime % 3600) / 60).toString().padStart(2, '0');
+    const s = (totalFocusTime % 60).toString().padStart(2, '0');
+    document.getElementById('today-time').innerText = `${h} : ${m} : ${s}`;
 }
 
 // 종료 버튼: 영상 없이 즉시 앱 중지 (기능 분리) 추후 수정시 사용하사면 됩니다. (백주은)
