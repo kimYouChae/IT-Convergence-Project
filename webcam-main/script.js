@@ -125,6 +125,10 @@ async function init() {
         document.getElementById('log-table-body').innerHTML = "";
     }
 
+    // 새 공부 시작 시 하트(라이프) 복구
+    const hearts = document.querySelectorAll('.heart');
+    hearts.forEach(heart => heart.classList.remove('lost'));
+
     // 2. 시작 영상 재생 후 감시 루프 시작 (영문 파일명으로 변경)
     playNpcSequence(['start_in.mp4', 'start_out.mp4'], () => {
         console.log("시작 영상 완료, 감시를 시작합니다.");
@@ -180,6 +184,13 @@ function triggerWarning() {
 
     warningCount++;
     console.log(`경고 발생! 현재 횟수: ${warningCount}`);
+
+    // 경고 시 오른쪽 하트부터 순차적으로 없애기
+    const hearts = document.querySelectorAll('.heart');
+    const heartIndex = hearts.length - warningCount;
+    if (heartIndex >= 0 && hearts[heartIndex]) {
+        hearts[heartIndex].classList.add('lost');
+    }
 
     if (warningCount === 1) {
         // 1차 경고

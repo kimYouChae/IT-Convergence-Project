@@ -33,7 +33,7 @@ body::before {
 #app-container {
     width: 900px;
     max-height: 90vh; /* 화면 높이의 90%까지만 커지도록 제한 */
-    overflow-y: auto; /* 내용이 넘칠 경우 세로 스크롤바 생성 */
+    overflow: hidden; /* 스크롤바가 생기지 않도록 숨김 처리 */
     background-color: rgba(255, 255, 255, 0.1); /* 반투명 배경 */
     border-radius: 20px;
     padding: 20px;
@@ -187,12 +187,16 @@ video {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+    transition: opacity 0.3s ease, transform 0.3s ease; /* 부드럽게 사라지는 효과 */
 }
 
 /* (선택 사항) 만약 실패했을 때 하트가 사라지게 하려면 별도의 클래스를 만드세요 */
+/* 실패했을 때 하트가 사라지는 효과 */
 .heart.lost {
     filter: grayscale(100%); /* 흑백으로 변경 */
     opacity: 0.3;            /* 투명도 조절 */
+    opacity: 0;            /* 투명도를 0으로 만들어 화면에서 숨김 */
+    transform: scale(0.5); /* 작아지면서 사라지는 애니메이션 효과 */
 }
 
 /* 하단 바 */
