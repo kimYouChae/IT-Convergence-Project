@@ -39,6 +39,8 @@ body::before {
     padding: 20px;
     color: white;
     box-sizing: border-box; /* 패딩을 포함하여 크기 계산 */
+    display: flex;          /* 내부 페이지의 스크롤을 제어하기 위해 추가 */
+    flex-direction: column;
 }
 
 /* 앱 컨테이너 스크롤바 커스텀 디자인 */
@@ -60,6 +62,8 @@ body::before {
 }
 .page-section.active {
     display: block;
+    flex: 1;                /* 앱 컨테이너의 남은 영역을 꽉 채움 */
+    min-height: 0;          /* 내용이 넘칠 때 뚫고 나가지 않고 스크롤을 생성하게 함 */
 }
 
 #start-page {
@@ -193,8 +197,6 @@ video {
 /* (선택 사항) 만약 실패했을 때 하트가 사라지게 하려면 별도의 클래스를 만드세요 */
 /* 실패했을 때 하트가 사라지는 효과 */
 .heart.lost {
-    filter: grayscale(100%); /* 흑백으로 변경 */
-    opacity: 0.3;            /* 투명도 조절 */
     opacity: 0;            /* 투명도를 0으로 만들어 화면에서 숨김 */
     transform: scale(0.5); /* 작아지면서 사라지는 애니메이션 효과 */
 }
@@ -260,6 +262,22 @@ video {
     justify-content: flex-start;
     height: 100%;
     min-height: 400px;
+    overflow-y: auto; /* 기록 페이지 내부에만 세로 스크롤 허용 */
+    width: 100%;      /* 스크롤바 영역 확보 */
+    padding-right: 5px; /* 스크롤바와 컨텐츠 간격 */
+}
+
+/* 기록 페이지 스크롤바 커스텀 디자인 */
+#record-page::-webkit-scrollbar {
+    width: 8px;
+}
+#record-page::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05); 
+    border-radius: 4px;
+}
+#record-page::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3); 
+    border-radius: 4px;
 }
 
 .record-top-bar {
