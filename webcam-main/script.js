@@ -4,6 +4,18 @@
 
 const URL = "./my_model/"; // 모델 경로 (프로젝트 폴더 내부로 이동 후 수정)
 const VIDEO_PATH = "./npc_video/"; // npc_video 폴더를 webcam-main 폴더 안에 넣어주세요.
+const SOUND_PATH = "./sounds/"; // 사운드 파일 경로 (웹캠 메인 폴더 안에 sounds 폴더 생성 필요)
+
+// --- 오디오 객체 설정 ---
+const clickSound = new Audio(SOUND_PATH + "click.mp3");
+const startVoiceSound = new Audio(SOUND_PATH + "start_voice.mp3");
+const footstepsSound = new Audio(SOUND_PATH + "footsteps.mp3");
+const warning1VoiceSound = new Audio(SOUND_PATH + "warning1_voice.mp3");
+const warning2VoiceSound = new Audio(SOUND_PATH + "warning2_voice.mp3");
+const successSound = new Audio(SOUND_PATH + "handClap.mp3");
+const bgmSound = new Audio(SOUND_PATH + "bgm.mp3");
+bgmSound.loop = true; // 배경음은 반복 재생되도록 설정
+
 let model, webcam, labelContainer, maxPredictions;
 let isRunning = false;
 let animationId = null;
@@ -58,6 +70,10 @@ function playNpcSequence(sources, onComplete = null) {
             });
             currentIdx++;
         } else {
+            // NPC 영상 재생이 모두 끝나면 발소리도 함께 중지
+            footstepsSound.pause();
+            footstepsSound.currentTime = 0;
+
             // 모든 영상 재생 완료 시
             if (onComplete) onComplete();
         }
@@ -129,6 +145,19 @@ async function init() {
     const hearts = document.querySelectorAll('.heart');
     hearts.forEach(heart => heart.classList.remove('lost'));
 
+    // --- 배경 앰비언스 및 시작 사운드 재생 ---
+    bgmSound.currentTime = 0;
+    bgmSound.play().catch(e => console.log("배경음 재생 실패:", e));
+    startVoiceSound.currentTime = 0;
+    startVoiceSound.play().catch(e => console.log("사운드 재생 실패:", e));
+    
+    // AI 보이스 대사가 끝난 후 발소리가 이어지도록 이벤트 처리 (순차 재생)
+    startVoiceSound.onended = () => {
+        // 발소리 재생
+        footstepsSound.currentTime = 0;
+        footstepsSound.play().catch(e => console.log("사운드 재생 실패:", e));
+    };
+
     // 2. 시작 영상 재생 후 감시 루프 시작 (영문 파일명으로 변경)
     playNpcSequence(['start_in.mp4', 'start_out.mp4'], () => {
         console.log("시작 영상 완료, 감시를 시작합니다.");
@@ -194,10 +223,18 @@ function triggerWarning() {
 
     if (warningCount === 1) {
         // 1차 경고
+        warning1VoiceSound.currentTime = 0;
+        warning1VoiceSound.play().catch(e => console.log("사운드 재생 실패:", e));
+        footstepsSound.currentTime = 0;
+        footstepsSound.play().catch(e => console.log("사운드 재생 실패:", e));
         playNpcSequence(['warning1_in.mp4', 'warning1_out.mp4']);
     }
     else if (warningCount === 2) {
         // 2차 경고
+        warning2VoiceSound.currentTime = 0;
+        warning2VoiceSound.play().catch(e => console.log("사운드 재생 실패:", e));
+        footstepsSound.currentTime = 0;
+        footstepsSound.play().catch(e => console.log("사운드 재생 실패:", e));
         playNpcSequence(['warning2_in.mp4', 'warning2_out.mp4']);
     }
     else if (warningCount >= 3) {
@@ -213,6 +250,8 @@ function triggerWarning() {
  * [3-3] 성공 상태 처리 (필요 시 호출)
  */
 function triggerSuccess() {
+    successSound.currentTime = 0;
+    successSound.play().catch(e => console.log("사운드 재생 실패:", e));
     playNpcSequence(['success.mp4'], () => {
         stopApp();
         showResultPage(true);
@@ -352,6 +391,17 @@ function stopApp() {
     }
     if (npcPlaceholder) npcPlaceholder.style.display = 'flex';
 
+    // 앱 중지 시 배경음 재생 중지
+    // 앱 중지 시 배경음 및 사운드 재생 중지 및 초기화
+    bgmSound.pause();
+    bgmSound.currentTime = 0;
+
+    startVoiceSound.pause();
+    startVoiceSound.currentTime = 0;
+
+    footstepsSound.pause();
+    footstepsSound.currentTime = 0;
+
     document.getElementById('prediction-text').innerText = "중지됨";
     document.getElementById('status-text').innerText = "상태 : 대기 중";
     document.getElementById('webcam-container').innerHTML = "";
@@ -385,6 +435,14 @@ function showResultPage(isSuccess) {
 
 // 이벤트 바인딩
 window.onload = function () {
+    // HTML 내의 모든 버튼에 클릭 사운드 이벤트 일괄 추가
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            clickSound.currentTime = 0;
+            clickSound.play().catch(e => console.log("클릭 사운드 재생 실패:", e));
+        });
+    });
+
     npcVideo = document.getElementById('npc-video');
     npcPlaceholder = document.getElementById('npc-placeholder');
     //시작 페이지 START 버튼
