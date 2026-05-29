@@ -270,7 +270,21 @@ async function loadModel() {
         labelContainer = document.getElementById("label-container");
         labelContainer.innerHTML = "";
         for (let i = 0; i < maxPredictions; i++) {
-            labelContainer.appendChild(document.createElement("div"));
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "prediction-item";
+            
+            const textDiv = document.createElement("div");
+            textDiv.className = "prediction-label-text";
+            itemDiv.appendChild(textDiv);
+
+            const barContainer = document.createElement("div");
+            barContainer.className = "progress-bar-container";
+            const bar = document.createElement("div");
+            bar.className = "progress-bar";
+            barContainer.appendChild(bar);
+            itemDiv.appendChild(barContainer);
+
+            labelContainer.appendChild(itemDiv);
         }
         document.getElementById('prediction-text').innerText = "모델 로드 완료";
     } catch (error) {
@@ -279,13 +293,18 @@ async function loadModel() {
 }
 
 async function setupWebcam() {
-    const flip = true;
-    webcam = new tmImage.Webcam(400, 300, flip);
-    await webcam.setup();
-    await webcam.play();
-    const container = document.getElementById("webcam-container");
-    container.innerHTML = "";
-    container.appendChild(webcam.canvas);
+    try {
+        const flip = true;
+        webcam = new tmImage.Webcam(400, 300, flip);
+        await webcam.setup();
+        await webcam.play();
+        const container = document.getElementById("webcam-container");
+        container.innerHTML = "";
+        container.appendChild(webcam.canvas);
+    } catch (error) {
+        console.error("웹캠 설정 실패:", error);
+        alert("카메라 접근에 실패했습니다. 카카오톡 등 인앱 브라우저에서는 외부 브라우저(Safari, Chrome)로 열어주세요.");
+    }
 }
 
 async function loop() {
@@ -305,13 +324,23 @@ async function predict() {
 
     // 화면 결과 표시
     for (let i = 0; i < maxPredictions; i++) {
-        labelContainer.childNodes[i].innerHTML = `${prediction[i].className}: ${prediction[i].probability.toFixed(2)}`;
+        const itemDiv = labelContainer.childNodes[i];
+        const textDiv = itemDiv.querySelector('.prediction-label-text');
+        const bar = itemDiv.querySelector('.progress-bar');
+        
+        const prob = prediction[i].probability;
+        textDiv.innerHTML = `<span>${prediction[i].className}</span><span>${(prob * 100).toFixed(0)}%</span>`;
+        bar.style.width = (prob * 100) + "%";
+
         if (prediction[i].probability > best.probability) {
             best = prediction[i];
         }
     }
 
-    document.getElementById('prediction-text').innerText = best.className;
+    // AI 신뢰도가 80% 이상일 때만 결과 텍스트 업데이트
+    if (best.probability >= 0.8) {
+        document.getElementById('prediction-text').innerText = best.className;
+    }
 
     // NPC 영상이 재생 중인 동안은 딴짓 감지 카운트를 하지 않음
     if (!npcVideo.paused) {
