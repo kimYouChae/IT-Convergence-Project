@@ -43,6 +43,8 @@ let totalFocusTime = 0; // 누적 집중 시간(초)
 
 let npcVideo;
 let npcPlaceholder;
+let footstepsTimeoutId = null;
+let startVoiceTimeoutId = null;
 
 /**
  * [공통] 영상을 순서대로 재생하는 함수
@@ -62,17 +64,113 @@ function playNpcSequence(sources, onComplete = null) {
 
     const playNext = () => {
         if (currentIdx < sources.length) {
-            const videoSrc = VIDEO_PATH + sources[currentIdx];
+            const videoFile = sources[currentIdx];
+            const videoSrc = VIDEO_PATH + videoFile;
             console.log("재생 중:", videoSrc);
             npcVideo.src = videoSrc;
-            npcVideo.play().catch(e => {
-                console.error("재생 실패(경로 및 파일명 확인):", videoSrc, e);
-            });
+            
+            let delayVideoPlay = false;
+
+            // start_in.mp4 재생 시 발소리 2초 재생
+            if (videoFile === 'start_in.mp4') {
+                footstepsSound.currentTime = 0;
+                footstepsSound.play().catch(e => console.log("사운드 재생 실패:", e));
+                if (footstepsTimeoutId) clearTimeout(footstepsTimeoutId);
+                footstepsTimeoutId = setTimeout(() => {
+                    footstepsSound.pause();
+                }, 2000);
+            }
+            // start_out.mp4 재생 시 1.5초 뒤부터 발소리 재생
+            else if (videoFile === 'start_out.mp4') {
+                if (footstepsTimeoutId) clearTimeout(footstepsTimeoutId);
+                footstepsTimeoutId = setTimeout(() => {
+                    footstepsSound.play().catch(e => console.log("사운드 재생 실패:", e));
+                }, 1500);
+            }
+            // warning1_in.mp4 재생 시 발소리 3초 재생
+            else if (videoFile === 'warning1_in.mp4') {
+                footstepsSound.currentTime = 0;
+                footstepsSound.play().catch(e => console.log("사운드 재생 실패:", e));
+                if (footstepsTimeoutId) clearTimeout(footstepsTimeoutId);
+                footstepsTimeoutId = setTimeout(() => {
+                    footstepsSound.pause();
+                }, 3000);
+            }
+            // warning1_out.mp4 재생 전 보이스 출력, 출력 후 비디오 및 발소리 재생
+            else if (videoFile === 'warning1_out.mp4') {
+                delayVideoPlay = true;
+                warning1VoiceSound.currentTime = 0;
+                
+                const startVideo = () => {
+                    npcVideo.play().catch(e => console.error("재생 실패(경로 및 파일명 확인):", videoSrc, e));
+                    if (footstepsTimeoutId) clearTimeout(footstepsTimeoutId);
+                    footstepsTimeoutId = setTimeout(() => {
+                        footstepsSound.currentTime = 0;
+                        footstepsSound.play().catch(e => console.log("사운드 재생 실패:", e));
+                    }, 1500);
+                };
+
+                warning1VoiceSound.play().then(() => {
+                    warning1VoiceSound.onended = startVideo;
+                }).catch(e => {
+                    console.log("사운드 재생 실패:", e);
+                    startVideo(); // 사운드 재생 실패 시에도 비디오는 재생
+                });
+            }
+            // warning2_in.mp4 재생 시 발소리 2초 재생
+            else if (videoFile === 'warning2_in.mp4') {
+                footstepsSound.currentTime = 0;
+                footstepsSound.play().catch(e => console.log("사운드 재생 실패:", e));
+                if (footstepsTimeoutId) clearTimeout(footstepsTimeoutId);
+                footstepsTimeoutId = setTimeout(() => {
+                    footstepsSound.pause();
+                    warning2VoiceSound.currentTime = 0;
+                    warning2VoiceSound.play().catch(e => console.log("사운드 재생 실패:", e));
+                }, 2000);
+            }
+            // warning2_out.mp4 재생 전 보이스 출력 대기, 출력 후 비디오 및 발소리 재생
+            else if (videoFile === 'warning2_out.mp4') {
+                delayVideoPlay = true;
+                
+                const startVideo2 = () => {
+                    npcVideo.play().catch(e => console.error("재생 실패(경로 및 파일명 확인):", videoSrc, e));
+                    if (footstepsTimeoutId) clearTimeout(footstepsTimeoutId);
+                    footstepsTimeoutId = setTimeout(() => {
+                        footstepsSound.currentTime = 0;
+                        footstepsSound.play().catch(e => console.log("사운드 재생 실패:", e));
+                    }, 2000);
+                };
+
+                if (!warning2VoiceSound.paused && !warning2VoiceSound.ended) {
+                    warning2VoiceSound.onended = startVideo2;
+                } else {
+                    startVideo2();
+                }
+            }
+
+            if (!delayVideoPlay) {
+                npcVideo.play().catch(e => {
+                    console.error("재생 실패(경로 및 파일명 확인):", videoSrc, e);
+                });
+            }
             currentIdx++;
         } else {
+            if (footstepsTimeoutId) {
+                clearTimeout(footstepsTimeoutId);
+                footstepsTimeoutId = null;
+            }
+
             // NPC 영상 재생이 모두 끝나면 발소리도 함께 중지
             footstepsSound.pause();
             footstepsSound.currentTime = 0;
+
+            // 영상 재생이 끝나면 비디오 창을 숨기고 대기 이미지(wait.jpg) 띄우기
+            npcVideo.style.display = 'none';
+            if (npcPlaceholder) {
+                npcPlaceholder.style.display = 'flex';
+                // 문구 대신 이미지로 교체
+                npcPlaceholder.innerHTML = '<img src="./img/wait.jpg" style="max-width: 100%; max-height: 100%; border-radius: 10px; object-fit: contain;" alt="대기 중">';
+            }
 
             // 모든 영상 재생 완료 시
             if (onComplete) onComplete();
@@ -148,15 +246,12 @@ async function init() {
     // --- 배경 앰비언스 및 시작 사운드 재생 ---
     bgmSound.currentTime = 0;
     bgmSound.play().catch(e => console.log("배경음 재생 실패:", e));
-    startVoiceSound.currentTime = 0;
-    startVoiceSound.play().catch(e => console.log("사운드 재생 실패:", e));
     
-    // AI 보이스 대사가 끝난 후 발소리가 이어지도록 이벤트 처리 (순차 재생)
-    startVoiceSound.onended = () => {
-        // 발소리 재생
-        footstepsSound.currentTime = 0;
-        footstepsSound.play().catch(e => console.log("사운드 재생 실패:", e));
-    };
+    if (startVoiceTimeoutId) clearTimeout(startVoiceTimeoutId);
+    startVoiceTimeoutId = setTimeout(() => {
+        startVoiceSound.currentTime = 0;
+        startVoiceSound.play().catch(e => console.log("사운드 재생 실패:", e));
+    }, 2000);
 
     // 2. 시작 영상 재생 후 감시 루프 시작 (영문 파일명으로 변경)
     playNpcSequence(['start_in.mp4', 'start_out.mp4'], () => {
@@ -223,18 +318,10 @@ function triggerWarning() {
 
     if (warningCount === 1) {
         // 1차 경고
-        warning1VoiceSound.currentTime = 0;
-        warning1VoiceSound.play().catch(e => console.log("사운드 재생 실패:", e));
-        footstepsSound.currentTime = 0;
-        footstepsSound.play().catch(e => console.log("사운드 재생 실패:", e));
         playNpcSequence(['warning1_in.mp4', 'warning1_out.mp4']);
     }
     else if (warningCount === 2) {
         // 2차 경고
-        warning2VoiceSound.currentTime = 0;
-        warning2VoiceSound.play().catch(e => console.log("사운드 재생 실패:", e));
-        footstepsSound.currentTime = 0;
-        footstepsSound.play().catch(e => console.log("사운드 재생 실패:", e));
         playNpcSequence(['warning2_in.mp4', 'warning2_out.mp4']);
     }
     else if (warningCount >= 3) {
@@ -425,6 +512,10 @@ function stopApp() {
     bgmSound.pause();
     bgmSound.currentTime = 0;
 
+    if (startVoiceTimeoutId) {
+        clearTimeout(startVoiceTimeoutId);
+        startVoiceTimeoutId = null;
+    }
     startVoiceSound.pause();
     startVoiceSound.currentTime = 0;
 
@@ -482,12 +573,9 @@ window.onload = function () {
         triggerSuccess();
     };
 
-    //실패 버튼 : 누르면 즉시 실패 영상 재생 후 종료
+    //실패 버튼 : 누르면 즉시 경고 1회 발생 (하트 차감 및 경고 영상 재생)
     document.getElementById('fail-btn').onclick = () => {
-        playNpcSequence(['fail1.mp4', 'fail2.mp4'], () => {
-            stopApp();
-            showResultPage(false);
-        });
+        triggerWarning();
     };
 
     // 종료 버튼 클릭 시 실패 영상 세트 재생 후 종료
