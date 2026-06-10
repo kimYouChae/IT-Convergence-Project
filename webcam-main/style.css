@@ -39,7 +39,7 @@ body::before {
     background-color: rgba(255, 255, 255, 0.1); /* 반투명 배경 */
     border-radius: 20px;
     padding: 20px;
-    color: white;
+    color: black;
     box-sizing: border-box; /* 패딩을 포함하여 크기 계산 */
     display: flex;          /* 내부 페이지의 스크롤을 제어하기 위해 추가 */
     flex-direction: column;
@@ -84,8 +84,8 @@ body::before {
     position: absolute;
     top: 50%; /* 세로 중앙 정렬 */
     transform: translateY(-50%);
-    width: 25%; /* 수정: 가변 단위 사용, 중앙 컨텐츠 침범 최소화 */
-    max-width: 350px;
+    width: 35%; /* 수정: 가변 단위 사용, 중앙 컨텐츠 침범 최소화 */
+    max-width: 450px;
     height: auto;
     z-index: 0; /* 수정: 배경처럼 동작하게 하여 버튼 클릭 방해 방지 */
 }
@@ -96,6 +96,7 @@ body::before {
 
 .right-img {
     right: 20px; /* 오른쪽 여백 */
+    transform: translateY(-50%) scale(1.15); /* 왼쪽 이미지와 크기를 맞추기 위해 약간 확대 */
 }
 
 #start-page.active, #result-page.active {
@@ -125,7 +126,7 @@ button {
     background-color: #d4a373;
     border: none;
     border-radius: 8px;
-    color: white;
+    color: black;
     cursor: pointer;
     margin-top: 20px;
     font-weight: bold;
@@ -224,7 +225,7 @@ video {
     padding: 12px;
     border-radius: 10px;
     background-color: rgba(255, 255, 255, 0.14);
-    color: white;
+    color: black;
     text-align: center;
 }
 
@@ -444,6 +445,9 @@ video {
         /* 모바일 환경에서도 보이게 하되, 버튼 클릭을 방해하지 않도록 투명도를 조절합니다 */
         display: block;
         opacity: 0.3; 
+        width: 30%;
+    }
+}
         width: 30%;
     }
 }

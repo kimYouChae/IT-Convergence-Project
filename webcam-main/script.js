@@ -14,6 +14,8 @@ const warning1VoiceSound = new Audio(SOUND_PATH + "warning1_voice.mp3");
 const warning2VoiceSound = new Audio(SOUND_PATH + "warning2_voice.mp3");
 const successSound = new Audio(SOUND_PATH + "handClap.mp3");
 const bgmSound = new Audio(SOUND_PATH + "bgm.mp3");
+const sighSound = new Audio(SOUND_PATH + "한숨.wav");
+const gameOverSound = new Audio(SOUND_PATH + "game_over.mp3");
 bgmSound.loop = true; // 배경음은 반복 재생되도록 설정
 
 let model, webcam, labelContainer, maxPredictions;
@@ -51,6 +53,7 @@ let startVoiceTimeoutId = null;
  */
 function playNpcSequence(sources, onComplete = null) {
     let currentIdx = 0;
+    let waitingForSound = false;
 
     if (npcPlaceholder) npcPlaceholder.style.display = 'none';
     if (!npcVideo) {
@@ -147,6 +150,25 @@ function playNpcSequence(sources, onComplete = null) {
                     startVideo2();
                 }
             }
+            // fail2.mp4 재생 시 한숨.wav 재생 후 game_over.mp3 재생
+            else if (videoFile === 'fail2.mp4') {
+                waitingForSound = true;
+                sighSound.currentTime = 0;
+                sighSound.play().catch(e => {
+                    console.log("사운드 재생 실패:", e);
+                    waitingForSound = false;
+                });
+                sighSound.onended = () => {
+                    gameOverSound.currentTime = 0;
+                    gameOverSound.play().catch(e => {
+                        console.log("사운드 재생 실패:", e);
+                        waitingForSound = false;
+                    });
+                    gameOverSound.onended = () => {
+                        waitingForSound = false;
+                    };
+                };
+            }
 
             if (!delayVideoPlay) {
                 npcVideo.play().catch(e => {
@@ -172,8 +194,15 @@ function playNpcSequence(sources, onComplete = null) {
                 npcPlaceholder.innerHTML = '<img src="./img/wait.jpg" style="max-width: 100%; max-height: 100%; border-radius: 10px; object-fit: contain;" alt="대기 중">';
             }
 
-            // 모든 영상 재생 완료 시
-            if (onComplete) onComplete();
+            // 모든 영상 재생 완료 시 (사운드가 남았다면 끝날 때까지 대기)
+            const finalize = () => {
+                if (waitingForSound) {
+                    setTimeout(finalize, 300);
+                } else {
+                    if (onComplete) onComplete();
+                }
+            };
+            finalize();
         }
     };
 
@@ -227,6 +256,22 @@ async function init() {
     if (!webcam) await setupWebcam();
     if (!model) await loadModel();
     if (!model) return;
+
+    // --- 추가: 인식 결과 UI 0%로 초기화 (두 번째 시작 시 이전 결과 지우기) ---
+    if (labelContainer && maxPredictions) {
+        for (let i = 0; i < maxPredictions; i++) {
+            const itemDiv = labelContainer.childNodes[i];
+            if (itemDiv) {
+                const textDiv = itemDiv.querySelector('.prediction-label-text');
+                const bar = itemDiv.querySelector('.progress-bar');
+                if (textDiv && textDiv.innerHTML.includes('</span><span>')) {
+                    const parts = textDiv.innerHTML.split('</span><span>');
+                    textDiv.innerHTML = parts[0] + '</span><span>0%</span>';
+                }
+                if (bar) bar.style.width = "0%";
+            }
+        }
+    }
 
     // 새 공부 시작 시 이전 로그 초기화
     actionLogs = [];
@@ -326,7 +371,7 @@ function triggerWarning() {
     }
     else if (warningCount >= 3) {
         // 3차 경고 (실패)
-        playNpcSequence(['fail1.mp4', 'fail2.mp4'], () => {
+        playNpcSequence(['fail2.mp4'], () => {
             stopApp();
             showResultPage(false);
         });
@@ -522,6 +567,11 @@ function stopApp() {
     footstepsSound.pause();
     footstepsSound.currentTime = 0;
 
+    sighSound.pause();
+    sighSound.currentTime = 0;
+    gameOverSound.pause();
+    gameOverSound.currentTime = 0;
+
     document.getElementById('prediction-text').innerText = "중지됨";
     document.getElementById('status-text').innerText = "상태 : 대기 중";
     document.getElementById('webcam-container').innerHTML = "";
@@ -568,23 +618,18 @@ window.onload = function () {
     //시작 페이지 START 버튼
     document.getElementById('real-start-btn').onclick = init;
 
-    // 성공 버튼 : 누르면 즉시 성공 영상 재생 후 종료
-    document.getElementById('success-btn').onclick = () => {
-        triggerSuccess();
-    };
+    // 성공 버튼 (UI에서 제거됨)
+    // document.getElementById('success-btn').onclick = () => {
+    //     triggerSuccess();
+    // };
 
-    //실패 버튼 : 누르면 즉시 경고 1회 발생 (하트 차감 및 경고 영상 재생)
-    document.getElementById('fail-btn').onclick = () => {
-        triggerWarning();
-    };
-
-    // 종료 버튼 클릭 시 실패 영상 세트 재생 후 종료
-    document.getElementById('exit-btn').onclick = () => {
-        playNpcSequence(['fail1.mp4', 'fail2.mp4'], () => {
-            stopApp();
-            showResultPage(false);
-        });
-    };
+    // 종료 버튼 (UI에서 제거됨)
+    // document.getElementById('exit-btn').onclick = () => {
+    //     playNpcSequence(['fail2.mp4'], () => {
+    //         stopApp();
+    //         showResultPage(false);
+    //     });
+    // };
 
     // 결과 페이지 처음으로 버튼
     document.getElementById('go-home-btn').onclick = () => {
@@ -662,7 +707,7 @@ function renderBehaviorChart() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom', labels: { color: 'white' } },
+                legend: { position: 'bottom', labels: { color: 'black' } },
                 tooltip: { callbacks: { label: function(context) { return context.label + ': ' + context.raw + '%'; } } }
             }
         }
