@@ -111,6 +111,7 @@ body::before {
 
 #start-page h1 {
     color: black;
+    margin-bottom: -15px; /* 음수 마진을 주어 더 위로 끌어올림 */
 }
 
 /* 터치 인터페이스 버튼 크기 확보 */
@@ -134,7 +135,7 @@ button {
 }
 .primary-btn:hover { background-color: #c49363; }
 
-.input-group { margin: 20px 0; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.input-group { margin: -10px 0 60px 0; display: flex; flex-direction: column; gap: 10px; align-items: center; }
 .input-group label { font-size: 18px; font-weight: bold; }
 #study-time-input { padding: 10px; font-size: 20px; border-radius: 5px; border: none; text-align: center; width: 120px; outline: none; }
 
