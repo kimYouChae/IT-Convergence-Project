@@ -2,7 +2,7 @@
 
 웹캠 기반 AI 행동 인식으로 공부 집중도를 관리하는 프론트엔드 웹 서비스
 
-<img src="" alt="image">
+<img width="1920" height="906" alt="Image" src="https://github.com/user-attachments/assets/e77479ec-c01f-4279-a987-3456fcaa7144" />
 
 ## 목차
 - [프로젝트 소개](#프로젝트-소개)
@@ -61,7 +61,7 @@ StudyGuard는 "AI가 직접 사용자의 행동을 관찰하여 딴짓을 감지
 
 전체 구조는 "사용자 + 웹캠 → Frontend(HTML/CSS/JS) → AI/ML(Teachable Machine + TensorFlow.js) → 개발/버전관리/배포(VSCode-GitHub-Netlify)"의 흐름으로 구성된다.
 
-<img src="" alt="image">
+<img width="500" height="400" alt="Image" src="https://github.com/user-attachments/assets/c4e15bcb-2e9d-42cf-8b70-049612f4e388" />
 
 ## ✨서비스 흐름도
 
@@ -74,7 +74,7 @@ StudyGuard는 "AI가 직접 사용자의 행동을 관찰하여 딴짓을 감지
 
 즉, 성공/실패는 "목표 시간 도달 여부"와 "남은 하트 수"의 조합으로 결정된다.
 
-<img src="" alt="image">
+<img width="400" height="350" alt="Image" src="https://github.com/user-attachments/assets/e2084fac-66d5-4145-a7cd-aff0a9eabdb4" />
 
 ## ✨AI 모델 개발 과정
 
@@ -106,7 +106,7 @@ StudyGuard는 "AI가 직접 사용자의 행동을 관찰하여 딴짓을 감지
       </ul>
     </li>
     <li>이미지</li>
-    <img src="" alt="image">
+    <img width="221" height="462" alt="Image" src="https://github.com/user-attachments/assets/61492db7-a195-41e3-a5c0-04afdeddb33f" />
   </ul>
 </details>
 
@@ -141,7 +141,7 @@ StudyGuard는 "AI가 직접 사용자의 행동을 관찰하여 딴짓을 감지
       </ul>
     </li>
     <li>이미지</li>
-    <img src="" alt="image">
+    <img width="570" height="494" alt="Image" src="https://github.com/user-attachments/assets/495c6d74-e53c-4739-8e51-5a3f012f1e84" />
     <li>전체 정확도는 약 71.4%였음. Focus, Phone, Away는 개선되었으나, Distracted 클래스는 거의 모든 케이스가 Phone으로 오분류되는 문제가 확인됨. 졸거나 엎드리는 자세가 휴대폰을 내려다보는 자세와 시각적으로 매우 유사하게 인식되기 때문</li>
   </ul>
 </details>
@@ -172,7 +172,7 @@ StudyGuard는 "AI가 직접 사용자의 행동을 관찰하여 딴짓을 감지
         <li>동일한 유형의 증상이 아이폰 14 Pro, 갤럭시 S23+, 갤럭시 플립 4 등 다른 기종에서도 반복적으로 확인됨</li>
       </ul>
     </li>
-    <img src="" alt="image">
+    <img width="688" height="1123" alt="Image" src="https://github.com/user-attachments/assets/4c35a3d2-22bf-4791-bafc-02966d593d8e" />
     <li>🧾원인: PC 기준의 고정 단위(px, 100vh)와 강제 숨김(overflow: hidden) 설정에서 비롯됨. 화면 크기를 고정값으로 지정한 구조가 다양한 모바일 화면 크기와 가로/세로 전환에 유연하게 대응하지 못해, 화면 붕괴 및 스크롤 불가 현상으로 이어짐</li>
     <li>💡 해결:
       <ul>
@@ -182,7 +182,7 @@ StudyGuard는 "AI가 직접 사용자의 행동을 관찰하여 딴짓을 감지
       </ul>
       이를 통해 다양한 모바일 기종과 화면 방향에서도 핵심 UI가 가려지거나 잘리지 않고, 스크롤 및 버튼 클릭이 정상적으로 동작하도록 개선함
     </li>
-    <img src="" alt="image">
+    <img width="692" height="1135" alt="Image" src="https://github.com/user-attachments/assets/41899e1d-53cb-4832-b4ed-df59fe92a7aa" />
   </ul>
 </details>
 
@@ -190,7 +190,7 @@ StudyGuard는 "AI가 직접 사용자의 행동을 관찰하여 딴짓을 감지
   <summary><b>Distracted 클래스 오분류 문제</b></summary>
   <ul>
     <li>🚫문제: 2차 학습 결과 Distracted 클래스의 정확도가 0%(8건 중 0건)로, 거의 모든 케이스가 Phone으로 오분류됨</li>
-    <img src="" alt="image">
+    <img width="570" height="494" alt="Image" src="https://github.com/user-attachments/assets/c0374918-0e42-426f-800e-3eb515b52237" />
     <li>🧾원인: 졸거나 엎드리는 자세가 휴대폰을 내려다보는 자세와 시각적으로 매우 유사해 모델이 구분하지 못했고, 실제 웹캠 환경(각도상 엎드린 모습이 제대로 잡히지 않음)과 졸음 행동의 작은 동작 특성상 Teachable Machine이 의미 있는 패턴을 학습하기 어려운 구조였음</li>
     <li>💡해결: 팀 회의를 통해 Distracted 클래스를 제거하고, Focus/Phone/Away 3개 클래스로 모델을 재구성함. 구조적으로 학습이 불가능한 클래스를 제거하여 모델의 혼란을 줄였으며, 남은 오분류 문제는 추가 데이터 수집과 테스트를 통해 지속적으로 개선할 계획</li>
   </ul>
@@ -202,7 +202,7 @@ StudyGuard는 "AI가 직접 사용자의 행동을 관찰하여 딴짓을 감지
     <li>🚫문제: 초기에는 행동 인식 결과가 변경되는 즉시 경고를 발생시켰는데, 1초마다 인식 상태가 바뀌면서 잠깐 고개를 돌리는 정도의 동작에도 경고가 발생하는 문제가 있었음</li>
     <li>🧾원인: 즉시 반응형 경고 로직으로 인해, 짧은 시간의 자세 변화도 딴짓으로 즉시 판정됨</li>
     <li>💡해결: 딴짓 상태(Phone/Away)가 20초간 누적되었을 때 경고 1회가 발생하도록 로직을 수정함. 화면 좌측 하단에 "상태: 딴짓 감지(20/20초) | 남은 시간: 28:20"과 같이 현재 인식 상태, 누적 시간, 남은 세션 시간을 함께 표시하여 사용자가 자신의 상태를 실시간으로 확인할 수 있도록 구현함</li>
-    <img src="" alt="image">
+    <img width="443" height="92" alt="Image" src="https://github.com/user-attachments/assets/c9382d88-cb8e-4e41-b2c2-1e970ee38cfa" />
   </ul>
 </details>
 
@@ -211,7 +211,7 @@ StudyGuard는 "AI가 직접 사용자의 행동을 관찰하여 딴짓을 감지
 <details>
   <summary><b>시작 화면</b></summary>
   <p>프로젝트 타이틀과 목표 공부 시간을 입력하는 화면으로, START 버튼을 통해 세션을 시작한다.</p>
-  <img src="" alt="image">
+  <img width="1920" height="1020" alt="Image" src="https://github.com/user-attachments/assets/940ef4c3-b576-4a5b-8db2-5b1cfadf962f" />
 </details>
 
 <details>
@@ -225,25 +225,26 @@ StudyGuard는 "AI가 직접 사용자의 행동을 관찰하여 딴짓을 감지
     <li>성공 시: NPC가 박수를 치며 격려하는 보상 영상 출력</li>
   </ul>
   <p>화면은 NPC 영상 영역과 사용자 웹캠 영역으로 분리되어 있으며, 인식 결과(Focus/Phone/Away)와 각 상태별 확률, 남은 하트, 현재 상태 및 남은 시간이 함께 표시된다.</p>
-  <img src="" alt="image">
+  <img width="1920" height="1020" alt="Image" src="https://github.com/user-attachments/assets/f267bd97-9fea-4a4e-9435-688a671bc827" />
 </details>
 
 <details>
   <summary><b>성공 화면</b></summary>
   <p>"성공! 목표 시간을 달성했습니다. 수고하셨습니다!" 문구와 함께 대기실 복귀 버튼이 표시된다.</p>
-  <img src="" alt="image">
+  <img width="1920" height="1020" alt="Image" src="https://github.com/user-attachments/assets/53996389-08ea-4f68-9810-79d65596e033" />
 </details>
 
 <details>
   <summary><b>실패 화면</b></summary>
   <p>"실패... 딴짓이 감지되어 공부 모드가 종료되었습니다." 문구와 함께 대기실 복귀 버튼이 표시된다.</p>
-  <img src="" alt="image">
+  <img width="1920" height="1020" alt="Image" src="https://github.com/user-attachments/assets/caca5b2a-6488-4d9a-9476-a67799c28fcb" />
 </details>
 
 <details>
   <summary><b>나의 기록실 화면</b></summary>
   <p>누적 집중 시간, 행동 분석망(도넛/막대 그래프를 통한 Focus/Phone/Away 비율), 작전 로그(세션별 성공/실패 기록)를 확인할 수 있다.</p>
-  <img src="" alt="image">
+  <img width="1920" height="1020" alt="Image" src="https://github.com/user-attachments/assets/6be5fc24-82c4-42a1-99e3-fda8ba97f6ef" />
+  <img width="1920" height="1020" alt="Image" src="https://github.com/user-attachments/assets/10bace2e-ac0e-49ba-bf50-99d74bd8fb0f" />
 </details>
 
 ## ✨성과 및 한계
