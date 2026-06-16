@@ -1,7 +1,11 @@
-# StudyGuard
+# Study Guard
 
 웹캠 기반 AI 행동 인식으로 공부 집중도를 관리하는 프론트엔드 웹 서비스
 
+## 🎥소개
+### 💻[Youtube]
+https://www.youtube.com/watch?v=mMHKCJFJ4dA](https://youtu.be/XAGDh_GIJU4
+### 💻[Banner]
 <img width="1920" height="906" alt="Image" src="https://github.com/user-attachments/assets/e77479ec-c01f-4279-a987-3456fcaa7144" />
 
 ## 목차
