@@ -4,7 +4,7 @@
 
 ## 🎥소개
 ### 💻[Youtube]
-https://www.youtube.com/watch?v=mMHKCJFJ4dA](https://youtu.be/XAGDh_GIJU4
+https://youtu.be/XAGDh_GIJU4?si=mBO-yXQyW3Xf8lyY
 ### 💻[Banner]
 <img width="1920" height="906" alt="Image" src="https://github.com/user-attachments/assets/e77479ec-c01f-4279-a987-3456fcaa7144" />
 
